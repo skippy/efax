@@ -115,16 +115,17 @@ module EFax
     attr_reader :error_message
     attr_reader :error_level
     attr_reader :doc_id
+    attr_reader :doc
 
     def initialize(response)  #:nodoc:
       if response.is_a? Net::HTTPOK
-        doc = Hpricot(response.body)
-        @status_code = doc.at(:statuscode).inner_text.to_i
-        @error_message = doc.at(:errormessage)
+        @doc = Hpricot(response.body)
+        @status_code = @doc.at(:statuscode).inner_text.to_i
+        @error_message = @doc.at(:errormessage)
         @error_message = @error_message.inner_text if @error_message
-        @error_level = doc.at(:errorlevel)
+        @error_level = @doc.at(:errorlevel)
         @error_level = @error_level.inner_text if @error_level
-        @doc_id = doc.at(:docid).inner_text
+        @doc_id = @doc.at(:docid).inner_text
         @doc_id = @doc_id.empty? ? nil : @doc_id
       else
         @status_code = RequestStatus::HTTP_FAILURE
@@ -175,13 +176,14 @@ module EFax
     attr_reader :message
     attr_reader :classification
     attr_reader :outcome
+    attr_reader :doc
 
     def initialize(response) #:nodoc:
       if response.is_a? Net::HTTPOK
-        doc = Hpricot(response.body)
-        @message = doc.at(:message).innerText
-        @classification = doc.at(:classification).innerText.delete('"')
-        @outcome = doc.at(:outcome).innerText.delete('"')
+        @doc = Hpricot(response.body)
+        @message = @doc.at(:message).innerText
+        @classification = @doc.at(:classification).innerText.delete('"')
+        @outcome = @doc.at(:outcome).innerText.delete('"')
         if !sent_yet?(classification, outcome) || busy_signal?(classification)
           @status_code = QueryStatus::PENDING
         elsif @classification == "Success" && @outcome == "Success"
